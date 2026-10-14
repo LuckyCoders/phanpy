@@ -121,7 +121,7 @@ function renderTranslatedContent(content, urlMap = []) {
   if (!content || !urlMap.length) return content;
 
   const parts = [];
-  const tokenRegex = /__PHANPY_(URL|MENTION|HASHTAG|EMOJI)_(\d+)__/g;
+  const tokenRegex = /__PHANPY_(URL|MENTION|HASHTAG|EMOJI|CODE)_(\d+)__/g;
   let lastIndex = 0;
   let match;
 
@@ -130,7 +130,17 @@ function renderTranslatedContent(content, urlMap = []) {
       parts.push(content.slice(lastIndex, match.index));
     }
     const link = urlMap[Number(match[2])];
-    if (link?.kind === 'emoji' && link?.url) {
+    if (link?.kind === 'code') {
+      parts.push(
+        link.block ? (
+          <pre key={`translated-code-${match[2]}`}>
+            <code>{link.label}</code>
+          </pre>
+        ) : (
+          <code key={`translated-code-${match[2]}`}>{link.label}</code>
+        ),
+      );
+    } else if (link?.kind === 'emoji' && link?.url) {
       parts.push(
         <CustomEmoji
           key={`translated-emoji-${match[2]}`}

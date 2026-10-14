@@ -132,6 +132,7 @@ function getPostText(status, opts) {
     hidePoll,
     preserveURLs,
     preserveLinks,
+    preserveCode,
     urlMap,
     htmlTextOpts = {},
   } = opts || {};
@@ -168,8 +169,25 @@ function getPostText(status, opts) {
     getHTMLText(content, {
       ...htmlTextOpts,
       preProcess:
-        (maskURLs || hideInlineQuote || preserveLinks) &&
+        (maskURLs || hideInlineQuote || preserveLinks || preserveCode) &&
         ((dom) => {
+          if (preserveCode && urlMap) {
+            for (const code of dom.querySelectorAll('pre, code')) {
+              // A code element inside a pre is part of the same block and
+              // must not be replaced separately.
+              if (code.tagName === 'CODE' && code.closest('pre')) continue;
+              const label = code.textContent;
+              if (!label) continue;
+              const index =
+                urlMap.push({
+                  kind: 'code',
+                  label,
+                  block: code.tagName === 'PRE',
+                }) - 1;
+              code.replaceWith(`__PHANPY_CODE_${index}__`);
+            }
+          }
+
           if (preserveLinks && urlMap) {
             for (const a of dom.querySelectorAll('a.mention, a.hashtag')) {
               const label = a.innerText.trim();
@@ -1157,6 +1175,7 @@ function Status({
         maskURLs: true,
         preserveURLs: true,
         preserveLinks: true,
+        preserveCode: true,
         urlMap,
       });
       return { text, urlMap };
