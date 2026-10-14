@@ -1,6 +1,6 @@
 import './media-reveal-sheet.css';
 
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Trans } from '@lingui/react/macro';
 
 import i18nDuration from '../utils/i18n-duration';
 import states from '../utils/states';
@@ -14,8 +14,6 @@ const REVEAL_DURATIONS = [
 ];
 
 function MediaRevealSheet({ onClose }) {
-  const { _ } = useLingui();
-
   return (
     <div class="sheet media-reveal-sheet">
       <header>
@@ -43,7 +41,7 @@ function MediaRevealSheet({ onClose }) {
                 onClose();
               }}
             >
-              {_(label)}
+              {label()}
             </button>
           ))}
         </div>

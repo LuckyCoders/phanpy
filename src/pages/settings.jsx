@@ -491,7 +491,7 @@ function Settings({ onClose }) {
                         {AUTO_MEDIA_SPOILER_DURATIONS.map(
                           ([duration, label]) => (
                             <option value={duration}>
-                              {label ? _(label) : <Trans>Always</Trans>}
+                              {label ? label() : t`Always`}
                             </option>
                           ),
                         )}
