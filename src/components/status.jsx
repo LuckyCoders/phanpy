@@ -674,7 +674,7 @@ function Status({
     previewMode || readingExpandSpoilers || !!snapStates.spoilers[id];
   const autoExpandMediaSpoilers =
     snapStates.settings.autoExpandMediaSpoilers &&
-    (!snapStates.settings.autoExpandMediaSpoilersUntil ||
+    (snapStates.settings.autoExpandMediaSpoilersDuration === 0 ||
       snapStates.settings.autoExpandMediaSpoilersUntil > Date.now());
   const showSpoilerMedia =
     previewMode ||

@@ -112,15 +112,10 @@ function scheduleAutoExpandMediaSpoilersExpiry() {
   if (!autoExpandMediaSpoilers || !autoExpandMediaSpoilersUntil) return;
 
   const delay = autoExpandMediaSpoilersUntil - Date.now();
-  if (delay <= 0) {
-    states.settings.autoExpandMediaSpoilers = false;
-    states.settings.autoExpandMediaSpoilersUntil = null;
-    return;
-  }
+  if (delay <= 0) return;
 
   autoExpandMediaSpoilersTimer = setTimeout(() => {
-    states.settings.autoExpandMediaSpoilers = false;
-    states.settings.autoExpandMediaSpoilersUntil = null;
+    autoExpandMediaSpoilersTimer = undefined;
   }, delay);
 }
 
@@ -173,15 +168,11 @@ export function initStates() {
     'settings-autoExpandMediaSpoilersUntil',
   );
   states.settings.autoExpandMediaSpoilersUntil =
-    autoExpandMediaSpoilersUntil && autoExpandMediaSpoilersUntil > Date.now()
+    typeof autoExpandMediaSpoilersUntil === 'number'
       ? autoExpandMediaSpoilersUntil
-      : null;
-  if (
-    states.settings.autoExpandMediaSpoilersDuration > 0 &&
-    !states.settings.autoExpandMediaSpoilersUntil
-  ) {
-    states.settings.autoExpandMediaSpoilers = false;
-  }
+      : states.settings.autoExpandMediaSpoilersDuration > 0
+        ? 0
+        : null;
   scheduleAutoExpandMediaSpoilersExpiry();
 }
 
