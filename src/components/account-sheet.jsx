@@ -23,23 +23,40 @@ function AccountSheet({ account, instance: propInstance, onClose }) {
 
   useLocationChange(onClose);
 
-  const handlePointerDown = (e) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const getPoint = (event) =>
+    event.changedTouches?.[0] || event.touches?.[0] || event;
+
+  const beginSwipe = (event, source) => {
+    if (source === 'touch' && swipeRef.current?.source === 'pointer') return;
+    if (source === 'pointer') {
+      if (event.pointerType === 'mouse' && event.button !== 0) return;
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
+    const point = getPoint(event);
     swipeRef.current = {
-      x: e.clientX,
-      y: e.clientY,
+      source,
+      pointerId: event.pointerId,
+      x: point.clientX,
+      y: point.clientY,
       scrollTop:
         sheetRef.current?.querySelector('.account-container')?.scrollTop || 0,
     };
   };
 
-  const handlePointerUp = (e) => {
+  const finishSwipe = (event, source) => {
     const start = swipeRef.current;
+    if (!start || start.source !== source) return;
     swipeRef.current = null;
-    if (!start) return;
 
-    const deltaX = e.clientX - start.x;
-    const deltaY = e.clientY - start.y;
+    if (source === 'pointer') {
+      if (event.currentTarget.hasPointerCapture?.(start.pointerId)) {
+        event.currentTarget.releasePointerCapture(start.pointerId);
+      }
+    }
+
+    const point = getPoint(event);
+    const deltaX = point.clientX - start.x;
+    const deltaY = point.clientY - start.y;
     if (Math.abs(deltaY) < 72 || Math.abs(deltaY) < Math.abs(deltaX) * 1.25) {
       return;
     }
@@ -60,9 +77,14 @@ function AccountSheet({ account, instance: propInstance, onClose }) {
     <div
       ref={sheetRef}
       class="sheet account-sheet"
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
+      onPointerDown={(e) => beginSwipe(e, 'pointer')}
+      onPointerUp={(e) => finishSwipe(e, 'pointer')}
       onPointerCancel={() => {
+        swipeRef.current = null;
+      }}
+      onTouchStart={(e) => beginSwipe(e, 'touch')}
+      onTouchEnd={(e) => finishSwipe(e, 'touch')}
+      onTouchCancel={() => {
         swipeRef.current = null;
       }}
       // onClick={(e) => {

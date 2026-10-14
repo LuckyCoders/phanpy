@@ -156,6 +156,12 @@
             min-width: 0;
           }
 
+          > li > p.insignificant {
+            grid-column: 2;
+            margin: 0;
+            min-width: 0;
+          }
+
           > li > .shazam-container[hidden] {
             display: none;
           }
