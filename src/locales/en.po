@@ -5020,3 +5020,15 @@ msgstr ""
 #: src/utils/show-compose.js:21
 msgid "A post is currently open. Post or discard it before creating a new one."
 msgstr ""
+
+#: src/pages/settings.jsx
+msgid "Automatically show media spoilers"
+msgstr ""
+
+#: src/pages/settings.jsx
+msgid "Automatically reveal sensitive media and media covered by a spoiler."
+msgstr ""
+
+#: src/components/media-reveal-sheet.jsx
+msgid "Show media for"
+msgstr ""

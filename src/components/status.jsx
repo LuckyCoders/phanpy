@@ -1743,9 +1743,8 @@ function Status({
             <>
               <Icon icon="mute" />
               <span class="menu-grow">
-                <Trans>
-                  Ignore <span class="bidi-isolate">@{username || acct}</span>…
-                </Trans>
+                <Trans>Ignore</Trans>{' '}
+                <span class="bidi-isolate">@{username || acct}</span>…
               </span>
               <span>
                 <Icon icon="time" />

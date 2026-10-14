@@ -5013,3 +5013,15 @@ msgstr "Черновик сообщения в настоящее время м�
 msgid "A post is currently open. Post or discard it before creating a new one."
 msgstr "В настоящее время открыт пост. Опубликуйте его или отмените его перед созданием нового."
 
+#: src/pages/settings.jsx
+msgid "Automatically show media spoilers"
+msgstr "Автоматически открывать спойлеры медиа"
+
+#: src/pages/settings.jsx
+msgid "Automatically reveal sensitive media and media covered by a spoiler."
+msgstr "Автоматически открывать чувствительные медиафайлы и медиафайлы со спойлером."
+
+#: src/components/media-reveal-sheet.jsx
+msgid "Show media for"
+msgstr "Показывать медиа в течение"
+
