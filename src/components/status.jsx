@@ -672,10 +672,13 @@ function Status({
   // const readingExpandMedia = 'show_all';
   const showSpoiler =
     previewMode || readingExpandSpoilers || !!snapStates.spoilers[id];
+  const autoExpandMediaSpoilers =
+    snapStates.settings.autoExpandMediaSpoilers &&
+    (!snapStates.settings.autoExpandMediaSpoilersUntil ||
+      snapStates.settings.autoExpandMediaSpoilersUntil > Date.now());
   const showSpoilerMedia =
     previewMode ||
-    (snapStates.settings.autoExpandMediaSpoilers &&
-      filterInfo?.action !== 'blur') ||
+    (autoExpandMediaSpoilers && filterInfo?.action !== 'blur') ||
     (readingExpandMedia === 'show_all' && filterInfo?.action !== 'blur') ||
     (typeof snapStates.spoilersMedia[id] === 'number'
       ? snapStates.spoilersMedia[id] > Date.now()

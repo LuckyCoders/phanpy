@@ -94,10 +94,35 @@ const states = proxy({
     paginatedTimeline: false,
     autoHideBars: true,
     autoExpandMediaSpoilers: false,
+    autoExpandMediaSpoilersDuration: 0,
+    autoExpandMediaSpoilersUntil: null,
   },
 });
 
 export default states;
+
+let autoExpandMediaSpoilersTimer;
+
+function scheduleAutoExpandMediaSpoilersExpiry() {
+  clearTimeout(autoExpandMediaSpoilersTimer);
+  autoExpandMediaSpoilersTimer = undefined;
+
+  const { autoExpandMediaSpoilers, autoExpandMediaSpoilersUntil } =
+    states.settings;
+  if (!autoExpandMediaSpoilers || !autoExpandMediaSpoilersUntil) return;
+
+  const delay = autoExpandMediaSpoilersUntil - Date.now();
+  if (delay <= 0) {
+    states.settings.autoExpandMediaSpoilers = false;
+    states.settings.autoExpandMediaSpoilersUntil = null;
+    return;
+  }
+
+  autoExpandMediaSpoilersTimer = setTimeout(() => {
+    states.settings.autoExpandMediaSpoilers = false;
+    states.settings.autoExpandMediaSpoilersUntil = null;
+  }, delay);
+}
 
 export function initStates() {
   // init all account based states
@@ -142,6 +167,22 @@ export function initStates() {
     store.account.get('settings-autoHideBars') ?? true;
   states.settings.autoExpandMediaSpoilers =
     store.account.get('settings-autoExpandMediaSpoilers') ?? false;
+  states.settings.autoExpandMediaSpoilersDuration =
+    store.account.get('settings-autoExpandMediaSpoilersDuration') ?? 0;
+  const autoExpandMediaSpoilersUntil = store.account.get(
+    'settings-autoExpandMediaSpoilersUntil',
+  );
+  states.settings.autoExpandMediaSpoilersUntil =
+    autoExpandMediaSpoilersUntil && autoExpandMediaSpoilersUntil > Date.now()
+      ? autoExpandMediaSpoilersUntil
+      : null;
+  if (
+    states.settings.autoExpandMediaSpoilersDuration > 0 &&
+    !states.settings.autoExpandMediaSpoilersUntil
+  ) {
+    states.settings.autoExpandMediaSpoilers = false;
+  }
+  scheduleAutoExpandMediaSpoilersExpiry();
 }
 
 subscribeKey(states, 'notificationsLast', (v) => {
@@ -211,6 +252,18 @@ subscribe(states, (changes) => {
     }
     if (path.join('.') === 'settings.autoExpandMediaSpoilers') {
       store.account.set('settings-autoExpandMediaSpoilers', !!value);
+    }
+    if (path.join('.') === 'settings.autoExpandMediaSpoilersDuration') {
+      store.account.set('settings-autoExpandMediaSpoilersDuration', value);
+    }
+    if (path.join('.') === 'settings.autoExpandMediaSpoilersUntil') {
+      store.account.set('settings-autoExpandMediaSpoilersUntil', value);
+    }
+    if (
+      path[0] === 'settings' &&
+      path[1]?.startsWith('autoExpandMediaSpoilers')
+    ) {
+      scheduleAutoExpandMediaSpoilersExpiry();
     }
   }
 });

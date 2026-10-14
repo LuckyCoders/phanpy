@@ -16,6 +16,7 @@ import RelativeTime from '../components/relative-time';
 import languages from '../data/translang-languages';
 import { api, getPreferences, setPreferences } from '../utils/api';
 import getTranslateTargetLanguage from '../utils/get-translate-target-language';
+import i18nDuration from '../utils/i18n-duration';
 import localeCode2Text from '../utils/localeCode2Text';
 import prettyBytes from '../utils/pretty-bytes';
 import {
@@ -50,8 +51,17 @@ const targetLanguages = Object.entries(languages.tl).map(([code, name]) => ({
 
 const TRANSLATION_API_NAME = 'TransLang API';
 
+const AUTO_MEDIA_SPOILER_DURATIONS = [
+  [0, null],
+  [300, i18nDuration(5, 'minute')],
+  [600, i18nDuration(10, 'minute')],
+  [1800, i18nDuration(30, 'minute')],
+  [3600, i18nDuration(1, 'hour')],
+  [10_800, i18nDuration(3, 'hour')],
+];
+
 function Settings({ onClose }) {
-  const { t } = useLingui();
+  const { _, t } = useLingui();
   const snapStates = useSnapshot(states);
   const currentTheme = store.local.get('theme') || 'auto';
   const themeFormRef = useRef();
@@ -435,8 +445,14 @@ function Settings({ onClose }) {
                       type="checkbox"
                       checked={snapStates.settings.autoExpandMediaSpoilers}
                       onChange={(e) => {
-                        states.settings.autoExpandMediaSpoilers =
-                          e.target.checked;
+                        const enabled = e.target.checked;
+                        const duration =
+                          snapStates.settings.autoExpandMediaSpoilersDuration;
+                        states.settings.autoExpandMediaSpoilers = enabled;
+                        states.settings.autoExpandMediaSpoilersUntil =
+                          enabled && duration > 0
+                            ? Date.now() + duration * 1000
+                            : null;
                       }}
                     />
                     <span>
@@ -451,6 +467,37 @@ function Settings({ onClose }) {
                       </Trans>
                     </small>
                   </p>
+                  <div class="sub-section">
+                    <label>
+                      <span>
+                        <Trans>Keep media spoilers open for</Trans>
+                      </span>{' '}
+                      <select
+                        value={
+                          snapStates.settings.autoExpandMediaSpoilersDuration
+                        }
+                        disabled={!snapStates.settings.autoExpandMediaSpoilers}
+                        onChange={(e) => {
+                          const duration = Number(e.target.value);
+                          states.settings.autoExpandMediaSpoilersDuration =
+                            duration;
+                          states.settings.autoExpandMediaSpoilersUntil =
+                            snapStates.settings.autoExpandMediaSpoilers &&
+                            duration > 0
+                              ? Date.now() + duration * 1000
+                              : null;
+                        }}
+                      >
+                        {AUTO_MEDIA_SPOILER_DURATIONS.map(
+                          ([duration, label]) => (
+                            <option value={duration}>
+                              {label ? _(label) : <Trans>Always</Trans>}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  </div>
                 </li>
               </ul>
             </section>

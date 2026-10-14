@@ -5021,6 +5021,14 @@ msgstr "Автоматически открывать спойлеры меди�
 msgid "Automatically reveal sensitive media and media covered by a spoiler."
 msgstr "Автоматически открывать чувствительные медиафайлы и медиафайлы со спойлером."
 
+#: src/pages/settings.jsx
+msgid "Keep media spoilers open for"
+msgstr "Оставлять спойлеры медиа открытыми в течение"
+
+#: src/pages/settings.jsx
+msgid "Always"
+msgstr "Всегда"
+
 #: src/components/media-reveal-sheet.jsx
 msgid "Show media for"
 msgstr "Показывать медиа в течение"
