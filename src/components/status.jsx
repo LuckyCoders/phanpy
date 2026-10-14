@@ -243,6 +243,16 @@ function getPostText(status, opts) {
   ]
     .join('\n\n')
     .trim();
+  if (preserveCode && urlMap) {
+    return fullText.replace(/`([^`\n]+)`/g, (_, label) => {
+      const index =
+        urlMap.push({
+          kind: 'code',
+          label,
+        }) - 1;
+      return `__PHANPY_CODE_${index}__`;
+    });
+  }
   return fullText;
 }
 
