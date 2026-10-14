@@ -14,6 +14,7 @@ import supportedLanguages from '../data/status-supported-languages';
 import { api, getPreferences } from '../utils/api';
 import db from '../utils/db';
 import { getDtfLocale } from '../utils/dtf-locale';
+import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import haptics from '../utils/haptics';
 import localeMatch from '../utils/locale-match';
 import localeCode2Text from '../utils/localeCode2Text';
@@ -502,7 +503,11 @@ function Compose({
           : visibility,
       );
       setLanguage(
-        fixLanguage(language) ||
+        (states.settings.contentTranslation &&
+        states.settings.contentTranslationAutoInline
+          ? fixLanguage(getTranslateTargetLanguage(true))
+          : null) ||
+          fixLanguage(language) ||
           prefs['posting:default:language']?.toLowerCase() ||
           DEFAULT_LANG,
       );
