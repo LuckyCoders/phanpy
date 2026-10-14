@@ -31,6 +31,7 @@ import getTranslateTargetLanguage from '../utils/get-translate-target-language';
 import getHTMLText from '../utils/getHTMLText';
 import haptics from '../utils/haptics';
 import htmlContentLength from '../utils/html-content-length';
+import i18nDuration from '../utils/i18n-duration';
 import isSameURL from '../utils/is-same-url';
 import localeMatch from '../utils/locale-match';
 import mem from '../utils/mem';
@@ -92,6 +93,13 @@ import TranslationBlock, { translateText } from './translation-block';
 const SHOW_COMMENT_COUNT_LIMIT = 280;
 const INLINE_TRANSLATE_LIMIT = 140;
 const MAX_COLLECTIONS = 4;
+const IGNORE_DURATIONS = [
+  [300, i18nDuration(5, 'minute')],
+  [600, i18nDuration(10, 'minute')],
+  [1800, i18nDuration(30, 'minute')],
+  [3600, i18nDuration(1, 'hour')],
+  [10_800, i18nDuration(3, 'hour')],
+];
 
 const accountQueue = new PQueue({
   concurrency: 1,
@@ -443,7 +451,11 @@ function Status({
     );
   }
   const { masto, instance, authenticated } = api({ instance: propInstance });
-  const { instance: currentInstance } = api();
+  const {
+    masto: currentMasto,
+    instance: currentInstance,
+    authenticated: currentAuthenticated,
+  } = api();
   const sameInstance = instance === currentInstance;
 
   let sKey = statusKey(statusID || status?.id, instance);
@@ -1720,6 +1732,62 @@ function Status({
             </MenuItem>
           )}
       </div>
+      {currentAuthenticated && !isSelf && accountId && (
+        <SubMenu2
+          menuClassName="menu-blur"
+          openTrigger="clickOnly"
+          direction="bottom"
+          overflow="auto"
+          shift={16}
+          label={
+            <>
+              <Icon icon="mute" />
+              <span class="menu-grow">
+                <Trans>
+                  Ignore <span class="bidi-isolate">@{username || acct}</span>…
+                </Trans>
+              </span>
+              <span>
+                <Icon icon="time" />
+                <Icon icon="chevron-right" />
+              </span>
+            </>
+          }
+        >
+          <div class="menu-wrap">
+            {IGNORE_DURATIONS.map(([duration, label]) => (
+              <MenuItem
+                onClick={async () => {
+                  try {
+                    let targetID = accountId;
+                    if (!sameInstance) {
+                      const result = await currentMasto.v2.search.list({
+                        q: acct.includes('@')
+                          ? acct
+                          : `${username}@${instance}`,
+                        type: 'accounts',
+                        limit: 1,
+                        resolve: true,
+                      });
+                      targetID = result.accounts[0]?.id;
+                    }
+                    if (!targetID) throw new Error('Unable to resolve account');
+                    await currentMasto.v1.accounts
+                      .$select(targetID)
+                      .mute({ duration });
+                    showToast(t`Ignored @${username || acct} for ${label()}`);
+                  } catch (e) {
+                    console.error(e);
+                    showToast(t`Unable to ignore @${username || acct}`);
+                  }
+                }}
+              >
+                {label()}
+              </MenuItem>
+            ))}
+          </div>
+        </SubMenu2>
+      )}
       {isPublic && isSizeLarge && (
         <MenuItem
           onClick={() => {
