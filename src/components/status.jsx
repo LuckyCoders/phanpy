@@ -1690,48 +1690,6 @@ function Status({
           {nicePostURL(url)}
         </small>
       </MenuItem>
-      <div class="menu-horizontal">
-        <MenuItem
-          onClick={() => {
-            // Copy url to clipboard
-            try {
-              navigator.clipboard.writeText(url);
-              showToast(t`Link copied`);
-            } catch (e) {
-              console.error(e);
-              showToast(t`Unable to copy link`);
-            }
-          }}
-        >
-          <Icon icon="link" />
-          <span>
-            <Trans>Copy</Trans>
-          </span>
-        </MenuItem>
-        {isPublic &&
-          navigator?.share &&
-          navigator?.canShare?.({
-            url,
-          }) && (
-            <MenuItem
-              onClick={() => {
-                try {
-                  navigator.share({
-                    url,
-                  });
-                } catch (e) {
-                  console.error(e);
-                  alert(t`Sharing doesn't seem to work.`);
-                }
-              }}
-            >
-              <Icon icon="share" />
-              <span>
-                <Trans>Share…</Trans>
-              </span>
-            </MenuItem>
-          )}
-      </div>
       {currentAuthenticated && !isSelf && accountId && (
         <SubMenu2
           menuClassName="menu-blur"
@@ -1787,6 +1745,48 @@ function Status({
           </div>
         </SubMenu2>
       )}
+      <div class="menu-horizontal">
+        <MenuItem
+          onClick={() => {
+            // Copy url to clipboard
+            try {
+              navigator.clipboard.writeText(url);
+              showToast(t`Link copied`);
+            } catch (e) {
+              console.error(e);
+              showToast(t`Unable to copy link`);
+            }
+          }}
+        >
+          <Icon icon="link" />
+          <span>
+            <Trans>Copy</Trans>
+          </span>
+        </MenuItem>
+        {isPublic &&
+          navigator?.share &&
+          navigator?.canShare?.({
+            url,
+          }) && (
+            <MenuItem
+              onClick={() => {
+                try {
+                  navigator.share({
+                    url,
+                  });
+                } catch (e) {
+                  console.error(e);
+                  alert(t`Sharing doesn't seem to work.`);
+                }
+              }}
+            >
+              <Icon icon="share" />
+              <span>
+                <Trans>Share…</Trans>
+              </span>
+            </MenuItem>
+          )}
+      </div>
       {isPublic && isSizeLarge && (
         <MenuItem
           onClick={() => {
