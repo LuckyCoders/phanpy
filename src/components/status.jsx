@@ -138,11 +138,30 @@ function getPostText(status, opts) {
   const { spoilerText, poll, emojis } = status;
   let { content } = status;
   if (maskCustomEmojis && emojis?.length) {
+    const emojiMap = new Map(
+      emojis
+        .filter((emoji) => emoji?.shortcode && emoji?.url)
+        .map((emoji) => [emoji.shortcode, emoji]),
+    );
     const emojisRegex = new RegExp(
-      `:(${emojis.map((e) => e.shortcode).join('|')}):`,
+      `:(${Array.from(emojiMap.keys())
+        .sort((a, b) => b.length - a.length)
+        .map((shortcode) => shortcode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|')}):`,
       'g',
     );
-    content = content.replace(emojisRegex, '⬚');
+    content = content.replace(emojisRegex, (match, shortcode) => {
+      const emoji = emojiMap.get(shortcode);
+      if (!emoji || !urlMap) return '⬚';
+      const index =
+        urlMap.push({
+          kind: 'emoji',
+          shortcode,
+          url: emoji.url,
+          staticUrl: emoji.staticUrl,
+        }) - 1;
+      return `__PHANPY_EMOJI_${index}__`;
+    });
   }
   const fullText = [
     spoilerText || '',
