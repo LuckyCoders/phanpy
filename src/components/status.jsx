@@ -643,8 +643,12 @@ function Status({
     previewMode || readingExpandSpoilers || !!snapStates.spoilers[id];
   const showSpoilerMedia =
     previewMode ||
+    (snapStates.settings.autoExpandMediaSpoilers &&
+      filterInfo?.action !== 'blur') ||
     (readingExpandMedia === 'show_all' && filterInfo?.action !== 'blur') ||
-    !!snapStates.spoilersMedia[id];
+    (typeof snapStates.spoilersMedia[id] === 'number'
+      ? snapStates.spoilersMedia[id] > Date.now()
+      : !!snapStates.spoilersMedia[id]);
 
   if (reblog) {
     // If has statusID, means useItemID (cached in states)
@@ -797,12 +801,31 @@ function Status({
   const mediaContainerRef = useTruncated();
 
   const statusRef = useRef(null);
+  const mediaRevealLongPressRef = useRef();
   const [reloadPostContentCount, reloadPostContent] = useReducer(
     (c) => c + 1,
     0,
   );
 
   const unauthInteractionErrorMessage = t`Sorry, your current logged-in server can't interact with this post from another server.`;
+
+  const startMediaRevealLongPress = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    clearTimeout(mediaRevealLongPressRef.current?.timer);
+    mediaRevealLongPressRef.current = {
+      triggered: false,
+      timer: setTimeout(() => {
+        mediaRevealLongPressRef.current.triggered = true;
+        states.showMediaReveal = { statusId: id };
+      }, 500),
+    };
+  };
+
+  const cancelMediaRevealLongPress = () => {
+    clearTimeout(mediaRevealLongPressRef.current?.timer);
+    if (mediaRevealLongPressRef.current?.triggered) return;
+    mediaRevealLongPressRef.current = null;
+  };
 
   const textWeight = useCallback(
     () =>
@@ -2888,10 +2911,18 @@ function Status({
                         showSpoilerMedia ? 'spoiling' : ''
                       }`}
                       type="button"
+                      onPointerDown={startMediaRevealLongPress}
+                      onPointerUp={cancelMediaRevealLongPress}
+                      onPointerCancel={cancelMediaRevealLongPress}
+                      onPointerLeave={cancelMediaRevealLongPress}
                       hidden={!readingExpandSpoilers && !!spoilerText}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        if (mediaRevealLongPressRef.current?.triggered) {
+                          mediaRevealLongPressRef.current = null;
+                          return;
+                        }
                         if (showSpoilerMedia) {
                           delete states.spoilersMedia[id];
                         } else {

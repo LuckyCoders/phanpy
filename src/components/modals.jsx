@@ -18,6 +18,7 @@ import GenericAccounts from './generic-accounts';
 import ImportExportAccounts from './import-export-accounts';
 import MediaAltModal from './media-alt-modal';
 import MediaModal from './media-modal';
+import MediaRevealSheet from './media-reveal-sheet';
 import Modal from './modal';
 import OpenLinkSheet from './open-link-sheet';
 import QrCodeModal from './qr-code-modal';
@@ -159,6 +160,19 @@ export default function Modals() {
               // if (destination) {
               //   states.showAccounts = false;
               // }
+            }}
+          />
+        </Modal>
+      )}
+      {!!snapStates.showMediaReveal && (
+        <Modal
+          onClose={() => {
+            states.showMediaReveal = false;
+          }}
+        >
+          <MediaRevealSheet
+            onClose={() => {
+              states.showMediaReveal = false;
             }}
           />
         </Modal>

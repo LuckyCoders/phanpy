@@ -429,6 +429,29 @@ function Settings({ onClose }) {
                     </span>
                   </label>
                 </li>
+                <li class="block">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={snapStates.settings.autoExpandMediaSpoilers}
+                      onChange={(e) => {
+                        states.settings.autoExpandMediaSpoilers =
+                          e.target.checked;
+                      }}
+                    />
+                    <span>
+                      <Trans>Automatically show media spoilers</Trans>
+                    </span>
+                  </label>
+                  <p class="insignificant">
+                    <small>
+                      <Trans>
+                        Automatically reveal sensitive media and media covered
+                        by a spoiler.
+                      </Trans>
+                    </small>
+                  </p>
+                </li>
               </ul>
             </section>
           </>
