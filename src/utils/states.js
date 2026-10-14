@@ -60,6 +60,7 @@ const states = proxy({
   showAccounts: false,
   showDrafts: false,
   showMediaModal: false,
+  showMediaReveal: false,
   showShortcutsSettings: false,
   showKeyboardShortcutsHelp: false,
   showGenericAccounts: false,
@@ -92,6 +93,7 @@ const states = proxy({
     hideFederatedTimeline: false,
     paginatedTimeline: false,
     autoHideBars: true,
+    autoExpandMediaSpoilers: false,
   },
 });
 
@@ -138,6 +140,8 @@ export function initStates() {
     store.account.get('settings-paginatedTimeline') ?? false;
   states.settings.autoHideBars =
     store.account.get('settings-autoHideBars') ?? true;
+  states.settings.autoExpandMediaSpoilers =
+    store.account.get('settings-autoExpandMediaSpoilers') ?? false;
 }
 
 subscribeKey(states, 'notificationsLast', (v) => {
@@ -205,6 +209,9 @@ subscribe(states, (changes) => {
     if (path.join('.') === 'settings.autoHideBars') {
       store.account.set('settings-autoHideBars', !!value);
     }
+    if (path.join('.') === 'settings.autoExpandMediaSpoilers') {
+      store.account.set('settings-autoExpandMediaSpoilers', !!value);
+    }
   }
 });
 
@@ -215,6 +222,7 @@ export function hideAllModals() {
   states.showAccounts = false;
   states.showDrafts = false;
   states.showMediaModal = false;
+  states.showMediaReveal = false;
   states.showShortcutsSettings = false;
   states.showKeyboardShortcutsHelp = false;
   states.showGenericAccounts = false;

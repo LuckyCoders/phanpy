@@ -1,0 +1,8 @@
+.media-reveal-sheet .actions {
+  display: grid;
+  gap: 8px;
+}
+
+.media-reveal-sheet .actions button {
+  width: 100%;
+}
