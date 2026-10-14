@@ -1,5 +1,5 @@
 import { useLingui } from '@lingui/react/macro';
-import { useEffect } from 'preact/hooks';
+import { useEffect, useRef } from 'preact/hooks';
 
 import { api } from '../utils/api';
 import states from '../utils/states';
@@ -12,6 +12,8 @@ function AccountSheet({ account, instance: propInstance, onClose }) {
   const { t } = useLingui();
   const { masto, instance, authenticated } = api({ instance: propInstance });
   const isString = typeof account === 'string';
+  const sheetRef = useRef();
+  const swipeRef = useRef();
 
   useEffect(() => {
     if (!isString) {
@@ -21,9 +23,48 @@ function AccountSheet({ account, instance: propInstance, onClose }) {
 
   useLocationChange(onClose);
 
+  const handlePointerDown = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    swipeRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      scrollTop:
+        sheetRef.current?.querySelector('.account-container')?.scrollTop || 0,
+    };
+  };
+
+  const handlePointerUp = (e) => {
+    const start = swipeRef.current;
+    swipeRef.current = null;
+    if (!start) return;
+
+    const deltaX = e.clientX - start.x;
+    const deltaY = e.clientY - start.y;
+    if (Math.abs(deltaY) < 72 || Math.abs(deltaY) < Math.abs(deltaX) * 1.25) {
+      return;
+    }
+    if (start.scrollTop > 2) return;
+
+    if (deltaY > 0) {
+      onClose?.();
+      return;
+    }
+
+    const profileLink = sheetRef.current?.querySelector(
+      'header .account-block',
+    );
+    profileLink?.click();
+  };
+
   return (
     <div
-      class="sheet"
+      ref={sheetRef}
+      class="sheet account-sheet"
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => {
+        swipeRef.current = null;
+      }}
       // onClick={(e) => {
       //   const accountBlock = e.target.closest('.account-block');
       //   if (accountBlock) {
