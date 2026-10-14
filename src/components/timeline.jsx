@@ -10,6 +10,7 @@ import {
 } from 'preact/hooks';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { InView } from 'react-intersection-observer';
+import { useLocation } from 'react-router-dom';
 import { useDebouncedCallback } from 'use-debounce';
 import { useSnapshot } from 'valtio';
 
@@ -249,6 +250,7 @@ function Timeline({
 }) {
   const { t } = useLingui();
   const snapStates = useSnapshot(states);
+  const location = useLocation();
   const autoHideBars = snapStates.settings.autoHideBars;
   const [items, setItems] = useState([]);
   const [uiState, setUIState] = useState('start');
@@ -256,6 +258,11 @@ function Timeline({
   const [showNew, setShowNew] = useState(false);
   const [visible, setVisible] = useState(true);
   const scrollableRef = useRef();
+  const timelineScrollKey = useMemo(
+    () => `${location.pathname}${location.search}` || id,
+    [location.pathname, location.search, id],
+  );
+  const restoredScrollKeyRef = useRef();
 
   console.debug('RENDER Timeline', id, refresh);
   __BENCHMARK.start(`timeline-${id}-load`);
@@ -396,9 +403,47 @@ function Timeline({
   );
 
   useEffect(() => {
-    scrollableRef.current?.scrollTo({ top: 0 });
+    const savedScrollTop = states.scrollPositions[timelineScrollKey] || 0;
+    if (!savedScrollTop) {
+      scrollableRef.current?.scrollTo({ top: 0 });
+    }
     loadItems(true);
-  }, []);
+  }, [timelineScrollKey]);
+
+  useEffect(() => {
+    const scrollable = scrollableRef.current;
+    if (!scrollable) return;
+
+    let frame;
+    const saveScrollPosition = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        states.scrollPositions[timelineScrollKey] = scrollable.scrollTop;
+      });
+    };
+    scrollable.addEventListener('scroll', saveScrollPosition, {
+      passive: true,
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      scrollable.removeEventListener('scroll', saveScrollPosition);
+    };
+  }, [timelineScrollKey]);
+
+  useEffect(() => {
+    if (!items.length || restoredScrollKeyRef.current === timelineScrollKey) {
+      return;
+    }
+    restoredScrollKeyRef.current = timelineScrollKey;
+    const savedScrollTop = states.scrollPositions[timelineScrollKey] || 0;
+    if (!savedScrollTop) return;
+    requestAnimationFrame(() => {
+      scrollableRef.current?.scrollTo({
+        top: savedScrollTop,
+        behavior: 'instant',
+      });
+    });
+  }, [items.length, timelineScrollKey]);
   const firstLoad = useRef(true);
   useEffect(() => {
     if (firstLoad.current) {
