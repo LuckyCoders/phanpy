@@ -470,7 +470,7 @@ function Settings({ onClose }) {
                   <div class="sub-section">
                     <label>
                       <span>
-                        <Trans>Keep media spoilers open for</Trans>
+                        <Trans>Auto-open media spoilers for</Trans>
                       </span>{' '}
                       <select
                         value={
@@ -497,6 +497,14 @@ function Settings({ onClose }) {
                         )}
                       </select>
                     </label>
+                    <p class="insignificant">
+                      <small>
+                        <Trans>
+                          After the selected duration ends, media spoilers must
+                          be opened manually.
+                        </Trans>
+                      </small>
+                    </p>
                   </div>
                 </li>
               </ul>
