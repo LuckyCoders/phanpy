@@ -26,8 +26,14 @@ function AccountSheet({ account, instance: propInstance, onClose }) {
   const getPoint = (event) =>
     event.changedTouches?.[0] || event.touches?.[0] || event;
 
+  const isInteractiveTarget = (target) =>
+    target?.closest?.(
+      'a, button, input, textarea, select, [role="button"], [contenteditable="true"]',
+    );
+
   const beginSwipe = (event, source) => {
     if (source === 'touch' && swipeRef.current?.source === 'pointer') return;
+    if (isInteractiveTarget(event.target)) return;
     if (source === 'pointer') {
       if (event.pointerType === 'mouse' && event.button !== 0) return;
       event.currentTarget.setPointerCapture?.(event.pointerId);
